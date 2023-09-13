@@ -14,8 +14,8 @@ class findmansoonbot():
     def __init__(self):
         #telegram 세팅
         self.message=True #True시 슬랙 전송, Fasle시 터미널 출력
-        self.token='6047859325:AAGUN50_XeW3Vg6LDGHNj8loW4-afHWxskM'
-        self.cid=6231279024
+        self.token='***'
+        self.cid=***
         # self.cri_ymd=str(date.today()-timedelta(days=2))
         self.cri_ymd="2023-09-11"#테스트용 고정 날짜
         self.driverpath="/Users/yihoon-j/Documents/find_mansoon/chromedriver"
