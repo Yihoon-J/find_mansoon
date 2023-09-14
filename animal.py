@@ -2,23 +2,42 @@ import bs4, requests
 import telegram
 import asyncio
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from datetime import timedelta, date
 import time
 import warnings
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 warnings.filterwarnings('ignore')
-        
-        
+
 class findmansoonbot():
     def __init__(self):
         #telegram 세팅
         self.message=True #True시 슬랙 전송, Fasle시 터미널 출력
-        self.token='***'
-        self.cid=***
-        # self.cri_ymd=str(date.today()-timedelta(days=2))
-        self.cri_ymd="2023-09-11"#테스트용 고정 날짜
-        self.driverpath="/Users/yihoon-j/Documents/find_mansoon/chromedriver"
+        self.token='6047859325:AAGUN50_XeW3Vg6LDGHNj8loW4-afHWxskM'
+        self.cid=6231279024
+        self.cri_ymd=str(date.today()-timedelta(days=2))
+        #self.cri_ymd="2023-09-11"#테스트용
+        # self.driverpath="/Users/yihoon-j/Documents/find_mansoon/chromedriver" #Local
+        self.driverpath="/opt/python/bin/chromedriver" #Lambda 3.7
+        
+        chrome_options = Options()
+        chrome_options.add_argument('--headless')
+        # chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--window-size=1280x1696')
+        chrome_options.add_argument('--user-data-dir=/tmp/user-data')
+        chrome_options.add_argument('--hide-scrollbars')
+        chrome_options.add_argument('--enable-logging')
+        chrome_options.add_argument('--log-level=0')
+        chrome_options.add_argument('--v=99')
+        chrome_options.add_argument('--single-process')
+        chrome_options.add_argument('--data-path=/tmp/data-path')
+        chrome_options.add_argument('--ignore-certificate-errors')
+        chrome_options.add_argument('--homedir=/tmp')
+        chrome_options.add_argument('--disk-cache-dir=/tmp/cache-dir')
+        chrome_options.add_argument('user-agent=Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36')
+        chrome_options.binary_location = "/opt/python/bin/headless-chromium"
+        self.driver = webdriver.Chrome(, chrome_options=chrome_options)
         
     def __main__(self):
         self.count=self.get_count()
@@ -67,7 +86,7 @@ class findmansoonbot():
         urllist=[]
         for i in range(count_page): #페이지 단위 반복
             url="https://www.animal.go.kr/front/awtis/protection/protectionList.do?csSignature=OawIKLjhdQUE3f9w1%2FQc1Q%3D%3D&boardId=&page=1&pageSize=10&desertionNo=&menuNo=1000000060&searchSDate="+self.cri_ymd+"&searchEDate="+self.cri_ymd+"&searchUprCd=&searchOrgCd=&searchCareRegNo=&searchUpKindCd=417000&searchKindCd=&searchSexCd=F&searchRfid=&&page=1"
-            driver=webdriver.Chrome(self.driverpath)
+            driver=self.driver
             driver.get(url)
             btnchk=True
             num=1
@@ -119,40 +138,10 @@ class findmansoonbot():
                 asyncio.run(self.t_ph(ph=picture))
                 asyncio.run(self.t_tx(tx=f"{i+1}/{count}\n{info}"))
             asyncio.run(self.t_tx("출력을 종료합니다."))
-            
-        
-        
-task=findmansoonbot()
-task.__main__() 
-        
-        
-        
-#각 동물 정보
-# all_list=soup.select('#searchList > div.boardList > ul:nth-child(2)')[0].text.\
-#     replace("\n\n\n\n","").replace("\n\n","\n").replace('공고번호','공고번호: ').\
-#     replace('접수일자','접수일자: ').replace('품종','품종: ').replace('상태','상태: ').\
-#     replace('성별', '성별: ').replace('발견장소','발견장소: ').replace('특징','특징: ').\
-#     replace('기타사항', '기타사항: ').replace('등록번호','등록번호: ').\
-#     split(sep="자세히 보기\n\n")[1:]
-
-
-# #각 동물 사진
-# front_url="https://www.animal.go.kr"
-# p=soup.find_all('div', {'class':'thumbnail'})
-# urllist=[]
-# for i in range(len(p)):
-#     # urllist.append(front_url+str(p[i].find('img')['src']))#저용량 이미지
-#     urllist.append(front_url+str(p[i].find('a')['href']))#고해상도 이미지
-
-
-
-
-#메시지 전송하는 부분    
-# if len(all_list)!=len(urllist):
-#     asyncio.run(t_tx(tx=f"페이지 내 조회된 사진 개수와 동물 정보 개수가 맞지 않음. 수동 확인 요망\nurl"))
-# else:
-#     # for i in range(len(all_list)):
-#     for i in range(3):
-#         asyncio.run(t_ph(ph=urllist[i]))
-#         asyncio.run(t_tx(tx=all_list[i]))
-
+                  
+def lambda_handler(event, context):
+    print('만순봇 시작')
+    now=time.time()
+    task=findmansoonbot()
+    task.__main__()
+    print('만순봇 종료. {:.2}/300sec.'.format(time.time()-now))
